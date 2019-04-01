@@ -8,8 +8,8 @@
 
 import os
 
-MIR = '/usr/ccrma/media/databases/mir_datasets/'
-SALAMI = os.path.join(MIR, 'salami', 'salami-data-public')
+MIR = '/home/franck/TRASH/'
+SALAMI = os.path.join(MIR, 'salami-data-public')
 IA = os.path.join(MIR, 'salami', 'SALAMI-IA')
 RWC = os.path.join(MIR, 'RWC')
 

@@ -22,7 +22,7 @@ DEBUG_PLOT = False
 # Set some params
 FS = 44100 # Enforce 44.1 kHz sample rate
 N_FFT = 2048
-HOP_LENGTH = N_FFT/2 # 50% overlap
+HOP_LENGTH = int(N_FFT/2) # 50% overlap
 N_MFCC = 13
 N_MEL = 128
 
@@ -32,7 +32,7 @@ T_CONTEXT = 3 # seconds of context for our features
 N_FRAME_CONTEXT = librosa.time_to_frames(
     T_CONTEXT,
     sr=FS, hop_length=HOP_LENGTH, n_fft=N_FFT
-    )[0]+1
+    ) +1
 # 64 frames on either side, for context
 
 BOUNDARY_KERNEL = signal.gaussian(N_FRAME_CONTEXT, std=32) # For smoothing our y
@@ -45,9 +45,9 @@ DTYPE = 'float32'
 #SALAMIDIR = os.path.abspath(os.path.join('/mnt','salami', 'salami-data-public'))
 
 # FOR USE ON WINDOWS MACHINE
-DATADIR = os.path.abspath('F:\salami-audio')
-SALAMIDIR = os.path.abspath('F:\salami-data-public')
-OUTPUTDIR = os.path.abspath('F:\CNNM-output-data')
+#DATADIR = os.path.abspath('F:\salami-audio')
+#SALAMIDIR = os.path.abspath('F:\salami-data-public')
+#OUTPUTDIR = os.path.abspath('F:\CNNM-output-data')
 
 # FOR USE ON CCRMA NETWORK
 #DATADIR = os.path.abspath('/user/t/tsob/Documents/cs231n/proj/data')
@@ -55,50 +55,50 @@ OUTPUTDIR = os.path.abspath('F:\CNNM-output-data')
 #OUTPUTDIR = os.path.abspath('/zap/tsob/audio')
 
 # My local machine
-#DATADIR = os.path.abspath('/home/tim/Projects/convnet-music-structure/salami-audio')
-#SALAMIDIR = os.path.abspath('/home/tim/Projects/convnet-music-structure/salami-data-public')
-#OUTPUTDIR = os.path.abspath('/home/tim/Projects/convnet-music-structure/src/zap/')
+DATADIR = os.path.abspath('/home/franck/TRASH/SALAMI')
+SALAMIDIR = os.path.abspath('/home/franck/TRASH/salami-data-public')
+OUTPUTDIR = os.path.abspath('/home/franck/TRASH/cnn-music-structure/outputs')
 
 # One big list of the valid SALAMI ids
-SIDS = [1258, 1522, 1491, 1391, 986,  1392, 1562, 1006, 1303, 1514, 982,  1095,
-        1130, 1216, 1204, 1536, 1492, 1230, 1503, 1096, 1220, 996,  976,  1010,
-        1120, 1064, 1292, 1008, 1431, 1206, 1074, 1356, 1406, 1559, 1566, 1112,
-        1278, 1540, 1423, 1170, 1372, 1014, 1496, 1327, 1439, 1528, 1311, 1226,
-        1138, 1016, 1364, 1484, 1338, 1254, 968,  998,  1302, 1075, 1018, 1166,
-        1239, 1080, 1032, 1447, 984,  1382, 1284, 1043, 1378, 1467, 1038, 1499,
-        1059, 1534, 1283, 1352, 1524, 1428, 1502, 1088, 1236, 1543, 1475, 1551,
-        990,  1589, 1282, 1459, 1379, 1542, 1131, 1460, 1050, 1128, 991,  1560,
-        1139, 1527, 1270, 1450, 1348, 1331, 1091, 1060, 1015, 1501, 1023, 1200,
-        1340, 1579, 1287, 1062, 1251, 1424, 1516, 1448, 1597, 1575, 1376, 1511,
-        1164, 1548, 1555, 1594, 1224, 1470, 1068, 1007, 1104, 1343, 1234, 1152,
-        1108, 1079, 1212, 972,  1190, 1271, 1136, 1300, 1003, 1103, 1434, 958,
-        1082, 1046, 1326, 1518, 999,  1388, 1472, 1507, 1036, 1316, 1274, 1198,
-        1083, 1435, 1387, 1587, 1572, 1290, 1565, 1504, 1127, 1146, 1462, 1268,
-        1094, 1520, 1366, 1347, 1483, 1517, 1319, 1092, 1498, 971,  1044, 1034,
-        1223, 1346, 1532, 1494, 1123, 1299, 1370, 1298, 1155, 1574, 1240, 1235,
-        1264, 1183, 1211, 1586, 1106, 1275, 1027, 1488, 1360, 1490, 1076, 1306,
-        1580, 1259, 1592, 1280, 1547, 1114, 1119, 1322, 1446, 1359, 1058, 1011,
-        1443, 1307, 1098, 1351, 1598, 1180, 1419, 1508, 995,  1550, 1051, 1194,
-        1215, 1247, 1395, 1159, 1531, 1432, 1396, 1276, 1055, 1334, 1272, 1374,
-        1355, 1390, 1022, 1571, 967,  1557, 1286, 1228, 975,  1024, 1314, 1158,
-        988,  1039, 1182, 955,  1564, 1279, 1544, 1332, 1294, 1308, 1515, 962,
-        1420, 1596, 1163, 1047, 1584, 1026, 1436, 1455, 1476, 1403, 1072, 1330,
-        1244, 1000, 1510, 1573, 994,  1028, 1549, 1179, 1162, 1552, 1238, 1371,
-        1438, 992,  1124, 1367, 1111, 1590, 980,  1242, 1567, 1556, 1054, 1354,
-        1539, 1116, 1148, 1004, 1533, 1232, 1339, 1324, 1291, 978,  1048, 1263,
-        1582, 1315, 1176, 1248, 1509, 1219, 1407, 1400, 1243, 1172, 1442, 1218,
-        1363, 1090, 1067, 1202, 1523, 1187, 1150, 1195, 956,  1452, 1186, 1563,
-        1312, 1519, 1427, 1042, 1412, 1595, 1323, 1184, 1086, 1554, 1546, 1246,
-        1260, 1479, 1099, 1318, 1368, 1558, 1122, 1384, 1525, 974,  1478, 1118,
-        1588, 1418, 1456, 963,  1078, 1408, 1402, 1444, 1142, 983,  1404, 1250,
-        1464, 1526, 1207, 1304, 1174, 1019, 1151, 1576, 1358, 1375, 1336, 1192,
-        1362, 1102, 1474, 1288, 1296, 1386, 1066, 1056, 970,  1512, 1399, 1416,
-        1188, 1070, 1107, 1063, 1295, 1581, 1266, 1012, 1175, 1422, 1134, 979,
-        1342, 1154, 1156, 1203, 1168, 1415, 1541, 1132, 1256, 1458, 1482, 1035,
-        1196, 1583, 1530, 1310, 1328, 1143, 1100, 1506, 1135, 1451, 1147, 1191,
-        1591, 960,  1110, 1414, 1383, 964,  1335, 1231, 1210, 1535, 1394, 1262,
-        959,  1214, 1350, 1570, 1084, 1495, 1020, 1071, 1568, 1380, 1144, 1487,
-        1222, 1199, 1538, 1160, 1578, 1468]
+# SIDS = [1258, 1522, 1491, 1391, 986,  1392, 1562, 1006, 1303, 1514, 982,  1095,
+#         1130, 1216, 1204, 1536, 1492, 1230, 1503, 1096, 1220, 996,  976,  1010,
+#         1120, 1064, 1292, 1008, 1431, 1206, 1074, 1356, 1406, 1559, 1566, 1112,
+#         1278, 1540, 1423, 1170, 1372, 1014, 1496, 1327, 1439, 1528, 1311, 1226,
+#         1138, 1016, 1364, 1484, 1338, 1254, 968,  998,  1302, 1075, 1018, 1166,
+#         1239, 1080, 1032, 1447, 984,  1382, 1284, 1043, 1378, 1467, 1038, 1499,
+#         1059, 1534, 1283, 1352, 1524, 1428, 1502, 1088, 1236, 1543, 1475, 1551,
+#         990,  1589, 1282, 1459, 1379, 1542, 1131, 1460, 1050, 1128, 991,  1560,
+#         1139, 1527, 1270, 1450, 1348, 1331, 1091, 1060, 1015, 1501, 1023, 1200,
+#         1340, 1579, 1287, 1062, 1251, 1424, 1516, 1448, 1597, 1575, 1376, 1511,
+#         1164, 1548, 1555, 1594, 1224, 1470, 1068, 1007, 1104, 1343, 1234, 1152,
+#         1108, 1079, 1212, 972,  1190, 1271, 1136, 1300, 1003, 1103, 1434, 958,
+#         1082, 1046, 1326, 1518, 999,  1388, 1472, 1507, 1036, 1316, 1274, 1198,
+#         1083, 1435, 1387, 1587, 1572, 1290, 1565, 1504, 1127, 1146, 1462, 1268,
+#         1094, 1520, 1366, 1347, 1483, 1517, 1319, 1092, 1498, 971,  1044, 1034,
+#         1223, 1346, 1532, 1494, 1123, 1299, 1370, 1298, 1155, 1574, 1240, 1235,
+#         1264, 1183, 1211, 1586, 1106, 1275, 1027, 1488, 1360, 1490, 1076, 1306,
+#         1580, 1259, 1592, 1280, 1547, 1114, 1119, 1322, 1446, 1359, 1058, 1011,
+#         1443, 1307, 1098, 1351, 1598, 1180, 1419, 1508, 995,  1550, 1051, 1194,
+#         1215, 1247, 1395, 1159, 1531, 1432, 1396, 1276, 1055, 1334, 1272, 1374,
+#         1355, 1390, 1022, 1571, 967,  1557, 1286, 1228, 975,  1024, 1314, 1158,
+#         988,  1039, 1182, 955,  1564, 1279, 1544, 1332, 1294, 1308, 1515, 962,
+#         1420, 1596, 1163, 1047, 1584, 1026, 1436, 1455, 1476, 1403, 1072, 1330,
+#         1244, 1000, 1510, 1573, 994,  1028, 1549, 1179, 1162, 1552, 1238, 1371,
+#         1438, 992,  1124, 1367, 1111, 1590, 980,  1242, 1567, 1556, 1054, 1354,
+#         1539, 1116, 1148, 1004, 1533, 1232, 1339, 1324, 1291, 978,  1048, 1263,
+#         1582, 1315, 1176, 1248, 1509, 1219, 1407, 1400, 1243, 1172, 1442, 1218,
+#         1363, 1090, 1067, 1202, 1523, 1187, 1150, 1195, 956,  1452, 1186, 1563,
+#         1312, 1519, 1427, 1042, 1412, 1595, 1323, 1184, 1086, 1554, 1546, 1246,
+#         1260, 1479, 1099, 1318, 1368, 1558, 1122, 1384, 1525, 974,  1478, 1118,
+#         1588, 1418, 1456, 963,  1078, 1408, 1402, 1444, 1142, 983,  1404, 1250,
+#         1464, 1526, 1207, 1304, 1174, 1019, 1151, 1576, 1358, 1375, 1336, 1192,
+#         1362, 1102, 1474, 1288, 1296, 1386, 1066, 1056, 970,  1512, 1399, 1416,
+#         1188, 1070, 1107, 1063, 1295, 1581, 1266, 1012, 1175, 1422, 1134, 979,
+#         1342, 1154, 1156, 1203, 1168, 1415, 1541, 1132, 1256, 1458, 1482, 1035,
+#         1196, 1583, 1530, 1310, 1328, 1143, 1100, 1506, 1135, 1451, 1147, 1191,
+#         1591, 960,  1110, 1414, 1383, 964,  1335, 1231, 1210, 1535, 1394, 1262,
+#         959,  1214, 1350, 1570, 1084, 1495, 1020, 1071, 1568, 1380, 1144, 1487,
+#        1222, 1199, 1538, 1160, 1578, 1468]
 
 def get_sids(datadir=DATADIR):
     """
@@ -110,6 +110,18 @@ def get_sids(datadir=DATADIR):
     paths = [listitem for listitem in os.listdir(datadir)]
     return sids, paths
 
+# We Need to get only the SIDs for which the annotation files are available
+ALL_SIDS = get_sids(datadir=DATADIR)[0]
+SIDS = []
+for sid in ALL_SIDS:
+    files = ev.id2filenames(
+    sid,
+    ann_type="uppercase",
+        salamipath=SALAMIDIR,
+    )
+    if files:
+        SIDS.append(sid)
+        
 def get_data(
         sids,
         datadir=DATADIR,
@@ -125,6 +137,8 @@ def get_data(
     train = {}
 
     for sid in sids:
+        #try:
+        print('Sid: ', sid)
         pathmask = [path.startswith(str(sid)) for path in paths]
         path_idx = pathmask.index(True)
         path = paths[path_idx]
@@ -142,7 +156,9 @@ def get_data(
         train[str(sid)]['y_path']  = y_path
         train[str(sid)]['X_shape'] = X_shape
         train[str(sid)]['y_shape'] = y_shape
-
+        #except:
+        #    print(f'File for sid {sid} not found')
+        
     # Save the dicts for later
     np.save(
         os.path.join(outputdir,'datadict'+prefix+'.npy'),
@@ -191,7 +207,7 @@ def serialize_song(
     X_shape = [0, 1, N_MEL, N_FRAME_CONTEXT]
     y_shape = [0, 1]
 
-    print "SID: {0},\tfile: {1}".format(sid, path)
+    print("SID: {0},\tfile: {1}".format(sid, path))
 
     y_path = os.path.abspath(
         os.path.join(outputdir, prefix + str(sid) + '_y')
@@ -241,9 +257,9 @@ def serialize_song(
     # Pad the frames, so we can have frames centered at the very start and
     # end of the song.
     sig_feat = np.hstack((
-        np.ones((N_MEL, N_FRAME_CONTEXT/2)) * DB_LOW,
+        np.ones((N_MEL, int(N_FRAME_CONTEXT/2))) * DB_LOW,
         sig_feat,
-        np.ones((N_MEL, N_FRAME_CONTEXT/2)) * DB_LOW
+        np.ones((N_MEL, int(N_FRAME_CONTEXT/2))) * DB_LOW
         ))
 
     # Generate the boundary indicator
@@ -288,7 +304,7 @@ def serialize_song(
             shape=tuple(X_shape)
             )
 
-    for i_frame in xrange(n_frames):
+    for i_frame in range(n_frames):
         X[i_frame,0] = sig_feat[:,i_frame:i_frame+N_FRAME_CONTEXT]
 
     # debug plot
@@ -379,9 +395,9 @@ if __name__ == "__main__":
         outputdir=ARGS.workingdir,
         prefix='test'
         )
-    print 'TRAINING SET:'
-    print train
-    print 'VALIDATION SET:'
-    print val
-    print 'TEST SET:'
-    print test
+    print ('TRAINING SET:')
+    print (train)
+    print ('VALIDATION SET:')
+    print (val)
+    print ('TEST SET:')
+    print (test)
