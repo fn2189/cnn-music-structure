@@ -1,0 +1,116 @@
+
+
+# Usual imports
+import time
+import math
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+import pickle
+from datetime import datetime
+import argparse
+
+import sys
+sys.path.append('./util')
+
+# My modules
+import generate_data as d
+
+def rel_error(x, y):
+    """ Returns relative error """
+    return np.max(np.abs(x - y) / (np.maximum(1e-8. np.abs(x) + np.abs(y))))
+
+import generate_data # My data function
+import util.evaluation as ev
+
+#Torch
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils import data
+from torch.backends import cudnn
+
+DATADIR = os.path.abspath('/home/franck/TRASH/SALAMI')
+SALAMIDIR = os.path.abspath('/home/franck/TRASH/salami-data-public')
+OUTPUTDIR = os.path.abspath('/home/franck/TRASH/cnn-music-structure/outputs')
+
+
+def main():
+    parser = argparse.ArgumentParser(description='PyTorch Training with Otto')
+    parser.add_argument('--n-train', type=int, default=1,
+                        help='number of songs for the training set')
+    parser.add_argument('--n-val', type=int, default=1,
+                        help='number of songs for the val set')
+    parser.add_argument('--n-test', type=int, default=1,
+                        help='number of songs for the test set')
+    parser.add_argument('--savedir', type=str, default='/home/franck/TRASH/cnn-music-structure/outputs',
+                       help='directory where to save the dict dataset output')
+
+    cmd_args = parser.parse_args()
+    
+    ALL_SIDS = generate_data.get_sids(datadir=DATADIR)[0]
+    SIDS = []
+    for sid in ALL_SIDS:
+        files = ev.id2filenames(
+        sid,
+        ann_type="uppercase",
+            salamipath=SALAMIDIR,
+        )
+        if files:
+            SIDS.append(sid)
+
+    splits_dict = create_data_splits(SIDS, cmd_args.n_train, cmd_args.n_val, cmd_args.n_test)
+
+    time = datetime.now()
+
+    with open(os.path.join(cmd_args.savedir, 'dict_data_{}.pkl'.format(str(time).replace(' ', '_'))), 'wb') as f:
+        print(f.name)
+        pickle.dump(splits_dict, f)
+
+def create_data_splits(sids, n_train=1, n_val=1, n_test=1):
+    n_total = n_train + n_val + n_test
+    assert n_total <= len(sids)
+
+                       
+    n_sids = len(sids)
+    SID_SUBSET = np.random.choice(sids, size=n_total, replace=False)
+
+    train = generate_data.get_data(
+        SID_SUBSET[:n_train],
+        datadir=DATADIR,
+        salamidir=SALAMIDIR,
+        outputdir=OUTPUTDIR,
+        prefix='train')
+    val   = generate_data.get_data(
+        SID_SUBSET[n_train:n_train+n_val],
+        datadir=DATADIR,
+        salamidir=SALAMIDIR,
+        outputdir=OUTPUTDIR,
+        prefix='val'
+        )
+    test  = generate_data.get_data(
+        SID_SUBSET[n_train+n_val:],
+        datadir=DATADIR,
+        salamidir=SALAMIDIR,
+        outputdir=OUTPUTDIR,
+        prefix='test'
+        )
+
+    splits_dict = {'train': [], 'val': [], 'test': [],}
+    for item_train in train.keys():
+        for i in range(train[item_train]['X_shape'][0]): 
+            splits_dict['train'].append((train[item_train]['X_path'], train[item_train]['X_shape'], train[item_train]['y_path'], train[item_train]['y_shape'], train[item_train]['X_shape'][0]))
+
+    for item_val in val.keys():
+        for i in range(val[item_val]['X_shape'][0]):
+            splits_dict['val'].append((val[item_val]['X_path'], val[item_val]['X_shape'], val[item_val]['y_path'], val[item_val]['y_shape'], val[item_val]['X_shape'][0]))
+
+    for item_test in test.keys():
+        for i in range(test[item_test]['X_shape'][0]):
+            splits_dict['test'].append((test[item_test]['X_path'], test[item_test]['X_shape'], test[item_test]['y_path'], test[item_test]['y_shape'], val[item_val]['X_shape'][0]))
+    
+    return splits_dict
+
+
+if __name__ == '__main__':
+    main()

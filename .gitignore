@@ -19,6 +19,8 @@ lib/
 lib64/
 outputs/
 parts/
+src/tensorboard/
+src/checkpoints/
 sdist/
 var/
 *.egg-info/
